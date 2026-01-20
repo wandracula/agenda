@@ -26,19 +26,13 @@ body{
 h1{
   font-size:42px;
   line-height:1.2;
-  margin-bottom:20px;
 }
 p{
   font-size:18px;
   opacity:.95;
 }
-.highlight{
-  color:#ffeb3b;
-  font-weight:600;
-}
-.buttons{
-  margin-top:35px;
-}
+.highlight{color:#ffeb3b}
+.buttons{margin-top:35px}
 .btn{
   display:inline-block;
   padding:15px 28px;
@@ -46,22 +40,9 @@ p{
   text-decoration:none;
   font-weight:600;
   margin-right:12px;
-  transition:.3s;
 }
-.btn.primary{
-  background:white;
-  color:#1a73e8;
-}
-.btn.primary:hover{
-  transform:translateY(-2px);
-}
-.btn.secondary{
-  border:2px solid white;
-  color:white;
-}
-.btn.secondary:hover{
-  background:rgba(255,255,255,.15);
-}
+.btn.primary{background:white;color:#1a73e8}
+.btn.secondary{border:2px solid white;color:white}
 .card{
   background:white;
   color:#333;
@@ -69,25 +50,9 @@ p{
   border-radius:20px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-.card h3{
-  margin-top:0;
-  font-size:22px;
-}
-ul{
-  padding-left:0;
-  list-style:none;
-  line-height:2;
-}
-ul li{
-  font-size:16px;
-}
-.footer-note{
-  margin-top:30px;
-  font-size:14px;
-  color:#666;
-}
+ul{list-style:none;padding:0;line-height:2}
 
-/* MODAL LOGIN */
+/* LOGIN MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -104,126 +69,124 @@ ul li{
   width:90%;
   max-width:360px;
   border-radius:16px;
-  text-align:center;
 }
-.modal-content h3{
-  margin-top:0;
-}
-.modal-content input{
+.modal-content input,button{
   width:100%;
   padding:12px;
   margin-top:12px;
-  border-radius:8px;
-  border:1px solid #ccc;
 }
-.modal-content button{
-  width:100%;
-  padding:12px;
-  margin-top:15px;
-  border:none;
-  border-radius:8px;
+button{
   background:#1a73e8;
   color:white;
+  border:none;
+  border-radius:8px;
   font-weight:600;
-  cursor:pointer;
 }
-.error{
-  color:#d32f2f;
-  font-size:14px;
-  margin-top:10px;
+.error{color:#d32f2f;margin-top:10px}
+
+/* WHATSAPP */
+.whatsapp{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#25d366;
+  color:white;
+  padding:14px 18px;
+  border-radius:50px;
+  font-weight:600;
+  text-decoration:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  z-index:999;
 }
+.whatsapp:hover{opacity:.9}
 
 @media(max-width:900px){
-  .hero{
-    grid-template-columns:1fr;
-  }
-  h1{
-    font-size:34px;
-  }
+  .hero{grid-template-columns:1fr}
+  h1{font-size:34px}
 }
 </style>
 </head>
 
 <body>
 
+<a class="whatsapp" href="https://wa.me/5599999999999" target="_blank">
+💬 WhatsApp
+</a>
+
 <div class="container">
   <div class="hero">
 
-    <!-- TEXTO PRINCIPAL -->
     <div>
-      <h1>
-        Assistência Técnica <span class="highlight">Especializada</span><br>
-        em Computadores e Notebooks
-      </h1>
-
+      <h1>Assistência Técnica <span class="highlight">Especializada</span></h1>
       <p>
-        Soluções completas em <b>manutenção, instalação, suporte técnico</b>  
-        e <b>visitas técnicas</b>, com agendamento rápido e acompanhamento online.
-      </p>
-
-      <p>
-        Aqui você sabe exatamente <b>em que etapa está o seu equipamento</b>,  
-        com transparência, organização e atendimento profissional.
+        Manutenção, suporte e visitas técnicas com <b>acompanhamento online</b>.
       </p>
 
       <div class="buttons">
-        <a class="btn primary" href="cliente.html">📅 Acompanhar meu serviço</a>
+        <a class="btn primary" href="cliente.html">📅 Acompanhar serviço</a>
         <a class="btn secondary" href="#" onclick="abrirLogin()">🔐 Área Administrativa</a>
       </div>
     </div>
 
-    <!-- CARD SERVIÇOS -->
     <div class="card">
       <h3>🔧 Nossos Serviços</h3>
       <ul>
-        <li>✔ Manutenção preventiva e corretiva</li>
-        <li>✔ Formatação, backup e upgrade</li>
-        <li>✔ Instalação de sistemas e softwares</li>
-        <li>✔ Suporte técnico especializado</li>
-        <li>✔ Visita técnica residencial ou empresarial</li>
+        <li>✔ Manutenção e formatação</li>
+        <li>✔ Upgrade e backup</li>
+        <li>✔ Instalação de sistemas</li>
+        <li>✔ Suporte técnico</li>
+        <li>✔ Visita técnica</li>
       </ul>
-
-      <div class="footer-note">
-        Atendimento organizado, rápido e com total controle do serviço.
-      </div>
     </div>
 
   </div>
 </div>
 
-<!-- MODAL LOGIN ADMIN -->
-<div class="modal" id="modalLogin">
+<!-- LOGIN -->
+<div class="modal" id="loginModal">
   <div class="modal-content">
-    <h3>🔐 Acesso Administrativo</h3>
-    <p>Informe a senha para acessar o painel.</p>
-
-    <input type="password" id="senha" placeholder="Senha de acesso">
-    <button onclick="entrar()">Entrar</button>
-
+    <h3>🔐 Login Administrativo</h3>
+    <input id="email" placeholder="Email">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
     <div class="error" id="erro"></div>
   </div>
 </div>
 
-<script>
-const SENHA_ADMIN = "1234"; // 🔐 ALTERE AQUI
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-function abrirLogin(){
-  modalLogin.style.display = "flex";
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
+  authDomain: "agenda-9dfe3.firebaseapp.com",
+  projectId: "agenda-9dfe3",
+  storageBucket: "agenda-9dfe3.firebasestorage.app",
+  messagingSenderId: "627589847930",
+  appId: "1:627589847930:web:24f29ea4646ee5feb1d4c3"
+};
 
-function entrar(){
-  if(senha.value === SENHA_ADMIN){
-    window.location.href = "admin.html";
-  }else{
-    erro.innerText = "❌ Senha incorreta.";
-  }
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.abrirLogin = ()=>{
+  loginModal.style.display="flex";
+};
+
+window.login = ()=>{
+  signInWithEmailAndPassword(auth,email.value,senha.value)
+    .then(()=>{
+      window.location.href="admin.html";
+    })
+    .catch(()=>{
+      erro.innerText="❌ Email ou senha inválidos";
+    });
+};
 
 window.onclick = e=>{
-  if(e.target === modalLogin){
-    modalLogin.style.display = "none";
-  }
-}
+  if(e.target === loginModal) loginModal.style.display="none";
+};
 </script>
 
 </body>
