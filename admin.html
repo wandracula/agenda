@@ -2,56 +2,106 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Agenda Técnica</title>
 
 <link rel="stylesheet" href="https://unpkg.com/fullcalendar@5.11.5/main.min.css">
 <script src="https://unpkg.com/fullcalendar@5.11.5/main.min.js"></script>
 
 <style>
-body{margin:0;font-family:Segoe UI,sans-serif;background:#f1f3f4}
-.header{background:#000;color:#fff;padding:15px;text-align:center}
-.container{padding:25px}
-.grid{display:grid;grid-template-columns:320px 1fr 320px;gap:20px}
-.card{background:#fff;padding:18px;border-radius:14px}
-input,select,button{width:100%;padding:8px;margin-top:6px}
-button{background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer}
-button.delete{background:#dc3545}
-button.logout{background:#333;margin-top:10px}
-.lista-scroll{max-height:600px;overflow:auto}
-.item{background:#fafafa;padding:12px;margin-bottom:10px;border-radius:10px}
+body{
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background:#f1f3f4;
+}
+.header{
+  background:#000;
+  color:#fff;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:20px;
+  font-weight:600;
+}
+.header button{
+  background:#dc3545;
+  border:none;
+  color:white;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.container{
+  max-width:1600px;
+  margin:auto;
+  padding:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:320px 1fr 300px;
+  gap:16px;
+}
+.card{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+h3{margin-top:0}
 
-/* LOGIN */
-#login{
-  position:fixed;inset:0;background:#f1f3f4;
-  display:flex;align-items:center;justify-content:center
+form input,form select,form button{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
 }
-.login-box{
-  background:#fff;padding:25px;width:320px;
-  border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.15)
+form button{
+  background:#1a73e8;
+  color:white;
+  border:none;
+  border-radius:8px;
 }
-.error{color:#dc3545;font-size:14px;margin-top:8px}
+
+.lista-scroll{
+  max-height:600px;
+  overflow-y:auto;
+}
+.item{
+  padding:12px;
+  margin-bottom:12px;
+  background:#fafafa;
+  border-radius:10px;
+  border-left:6px solid;
+}
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:12px;
+  color:white;
+}
+.badge.Agendado{background:#1a73e8}
+.badge.Pendente{background:#fbbc04}
+.badge.Concluído{background:#34a853}
+
+:root{
+  --instalacao:#1a73e8;
+  --manutencao:#f57c00;
+  --suporte:#8e24aa;
+  --visita:#2e7d32;
+}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-  <div class="login-box">
-    <h3>🔐 Login</h3>
-    <input id="email" placeholder="E-mail">
-    <input id="senha" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-    <div id="erro" class="error"></div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none">
-
 <div class="header">
   📊 Painel Administrativo
-  <button class="logout" onclick="logout()">Sair</button>
+  <button onclick="logout()">🚪 Sair</button>
 </div>
 
 <div class="container">
@@ -61,14 +111,16 @@ button.logout{background:#333;margin-top:10px}
 <h3>Novo Atendimento</h3>
 <form id="form">
   <input id="cliente" placeholder="Cliente" required>
-  <input id="telefone" placeholder="Telefone" required>
+  <input id="telefone" placeholder="Telefone (somente números)" required>
   <input id="endereco" placeholder="Endereço" required>
+
   <select id="servico">
     <option>Instalação</option>
     <option>Manutenção</option>
     <option>Suporte Técnico</option>
     <option>Visita Técnica</option>
   </select>
+
   <input type="date" id="data" required>
   <input type="time" id="hora" required>
   <button>Salvar</button>
@@ -87,18 +139,18 @@ button.logout{background:#333;margin-top:10px}
 
 </div>
 </div>
-</div>
 
 <script type="module">
+/* 🔥 FIREBASE */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getFirestore, collection, addDoc, deleteDoc, updateDoc,
-  doc, onSnapshot, query, orderBy
+import { 
+  getFirestore, collection, addDoc, 
+  getDocs, updateDoc, deleteDoc, doc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getAuth, onAuthStateChanged, signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
   authDomain: "agenda-9dfe3.firebaseapp.com",
@@ -109,42 +161,50 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
-const agendaRef = collection(db,"agenda");
+const auth = getAuth(app);
+const colAgenda = collection(db,"agenda");
 
-const calendarEl=document.getElementById("calendar");
-let calendar, agenda=[];
-
-/* LOGIN */
-window.login = async ()=>{
-  erro.innerText="";
-  try{
-    await signInWithEmailAndPassword(auth,email.value,senha.value);
-  }catch(e){
-    erro.innerText="❌ E-mail ou senha inválidos";
+/* 🔒 PROTEÇÃO */
+onAuthStateChanged(auth,user=>{
+  if(!user){
+    window.location.href="index.html";
   }
+});
+
+/* 🚪 LOGOUT */
+window.logout = ()=>{
+  signOut(auth).then(()=>{
+    window.location.href="index.html";
+  });
 };
 
-window.logout=()=>signOut(auth);
+const form = document.getElementById("form");
+const lista = document.getElementById("lista");
+const calendarEl = document.getElementById("calendar");
 
-onAuthStateChanged(auth,user=>{
-  login.style.display=user?"none":"flex";
-  app.style.display=user?"block":"none";
-});
+let agenda = [];
+let calendar;
 
-/* FIRESTORE */
-onSnapshot(query(agendaRef,orderBy("data")),snap=>{
-  agenda=snap.docs.map(d=>({id:d.id,...d.data()}));
+const coresServico={
+  "Instalação":"var(--instalacao)",
+  "Manutenção":"var(--manutencao)",
+  "Suporte Técnico":"var(--suporte)",
+  "Visita Técnica":"var(--visita)"
+};
+
+async function carregarAgenda(){
+  agenda=[];
+  const snap = await getDocs(colAgenda);
+  snap.forEach(d=>agenda.push({id:d.id,...d.data()}));
   atualizar();
-});
+}
 
-/* FORM */
-form.onsubmit=async e=>{
+form.onsubmit = async e=>{
   e.preventDefault();
-  await addDoc(agendaRef,{
+  await addDoc(colAgenda,{
     cliente:cliente.value,
-    telefone:telefone.value,
+    telefone:telefone.value.replace(/\D/g,""),
     endereco:endereco.value,
     servico:servico.value,
     data:data.value,
@@ -152,33 +212,56 @@ form.onsubmit=async e=>{
     status:"Agendado"
   });
   form.reset();
+  carregarAgenda();
 };
 
-window.apagar=id=>deleteDoc(doc(db,"agenda",id));
-window.alterarStatus=(id,s)=>updateDoc(doc(db,"agenda",id),{status:s});
+window.alterarStatus = async (id,status)=>{
+  await updateDoc(doc(db,"agenda",id),{status});
+  carregarAgenda();
+};
 
-/* LISTA */
+window.apagar = async id=>{
+  if(confirm("Apagar atendimento?")){
+    await deleteDoc(doc(db,"agenda",id));
+    carregarAgenda();
+  }
+};
+
 function atualizarLista(){
   lista.innerHTML="";
   agenda.forEach(a=>{
     lista.innerHTML+=`
-    <div class="item">
-      <b>${a.cliente}</b><br>
-      📅 ${a.data} ${a.hora}<br>
-      <button class="delete" onclick="apagar('${a.id}')">Apagar</button>
-    </div>`;
+      <div class="item" style="border-left-color:${coresServico[a.servico]}">
+        <b>${a.cliente}</b><br>
+        <small>${a.servico}</small><br>
+        <small>${a.data} às ${a.hora}</small><br><br>
+
+        <span class="badge ${a.status}">${a.status}</span><br><br>
+
+        <select onchange="alterarStatus('${a.id}',this.value)">
+          <option ${a.status==="Pendente"?"selected":""}>Pendente</option>
+          <option ${a.status==="Agendado"?"selected":""}>Agendado</option>
+          <option ${a.status==="Concluído"?"selected":""}>Concluído</option>
+        </select>
+
+        <button onclick="apagar('${a.id}')" style="margin-top:6px;background:#dc3545;color:white;border:none;padding:6px 10px;border-radius:6px">
+          Apagar
+        </button>
+      </div>
+    `;
   });
 }
 
-/* CALENDÁRIO */
 function atualizarCalendario(){
   if(calendar) calendar.destroy();
-  calendar=new FullCalendar.Calendar(calendarEl,{
+
+  calendar = new FullCalendar.Calendar(calendarEl,{
     locale:"pt-br",
     height:650,
-    events:agenda.map(a=>({
+    events: agenda.map(a=>({
       title:a.cliente,
-      start:`${a.data}T${a.hora}`
+      start:`${a.data}T${a.hora}`,
+      color:coresServico[a.servico]
     }))
   });
   calendar.render();
@@ -188,6 +271,8 @@ function atualizar(){
   atualizarLista();
   atualizarCalendario();
 }
+
+carregarAgenda();
 </script>
 
 </body>
