@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin - Agenda Técnica</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/fullcalendar@5.11.5/main.min.css">
 <script src="https://unpkg.com/fullcalendar@5.11.5/main.min.js"></script>
@@ -17,28 +16,15 @@ body{
 .header{
   background:#000;
   color:#fff;
-  padding:16px;
+  padding:18px;
   text-align:center;
-  font-size:20px;
+  font-size:22px;
   font-weight:600;
-  position:relative;
-}
-.logout{
-  position:absolute;
-  right:15px;
-  top:14px;
-  background:#dc3545;
-  color:#fff;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  cursor:pointer;
-  font-size:14px;
 }
 .container{
   max-width:1600px;
   margin:auto;
-  padding:20px;
+  padding:30px;
 }
 .grid{
   display:grid;
@@ -53,12 +39,13 @@ body{
 }
 h3{margin-top:0}
 
-/* FORM */
+/* FORM ESQUERDO */
 form input,form select,form button{
   width:100%;
-  padding:10px;
-  margin-top:8px;
+  padding:8px;
+  margin-top:6px;
   font-size:14px;
+  box-sizing:border-box;
 }
 button{
   background:#1a73e8;
@@ -77,6 +64,7 @@ button.maps{
 .lista-scroll{
   max-height:620px;
   overflow-y:auto;
+  padding-right:6px;
 }
 .item{
   padding:12px;
@@ -95,11 +83,21 @@ button.maps{
 .badge.Agendado{background:#1a73e8}
 .badge.Pendente{background:#fbbc04}
 .badge.Concluído{background:#34a853}
+small{color:#555}
 
 /* CALENDÁRIO */
 .fc-toolbar-title{
-  font-size:18px!important;
+  font-size:20px!important;
   font-weight:600;
+  margin-bottom:6px;
+}
+.fc-header-toolbar{
+  flex-direction:column;
+  gap:6px;
+}
+.fc-toolbar-chunk{
+  display:flex;
+  justify-content:center;
 }
 
 /* MODAL */
@@ -115,57 +113,52 @@ button.maps{
 .modal-content{
   background:white;
   padding:25px;
-  width:90%;
-  max-width:360px;
+  width:360px;
   border-radius:14px;
 }
-
-/* 📱 MOBILE */
-@media(max-width:900px){
-  .grid{
-    grid-template-columns:1fr;
-  }
-  .logout{
-    position:static;
-    margin-top:10px;
-  }
+.close{
+  text-align:right;
+  cursor:pointer;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  📊 Painel Administrativo
-  <button class="logout" onclick="logout()">Sair</button>
-</div>
+<div class="header">📊 Painel Administrativo</div>
 
 <div class="container">
 <div class="grid">
 
+<!-- CADASTRO -->
 <div class="card">
 <h3>Novo Atendimento</h3>
 <form id="form">
   <input id="cliente" placeholder="Cliente" required>
   <input id="telefone" placeholder="Telefone" required>
-  <input id="endereco" placeholder="Endereço" required>
+  <input id="endereco" placeholder="Endereço do cliente" required>
+
   <select id="servico">
     <option>Instalação</option>
     <option>Manutenção</option>
     <option>Suporte Técnico</option>
     <option>Visita Técnica</option>
   </select>
+
   <input type="date" id="data" required>
   <input type="time" id="hora" required>
   <button>Salvar</button>
 </form>
 </div>
 
+<!-- CALENDÁRIO -->
 <div class="card">
 <h3>📅 Agenda</h3>
 <div id="calendar"></div>
 </div>
 
+<!-- LISTA -->
 <div class="card">
 <h3>📋 Visitas</h3>
 <div id="lista" class="lista-scroll"></div>
@@ -174,19 +167,24 @@ button.maps{
 </div>
 </div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
+    <div class="close" onclick="modal.style.display='none'">✖</div>
     <h4 id="modalTitulo"></h4>
     <p id="modalInfo"></p>
-    <button onclick="modal.style.display='none'">Fechar</button>
   </div>
 </div>
 
-<!-- 🔐 FIREBASE AUTH -->
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, onSnapshot,
+  deleteDoc, doc, updateDoc, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
@@ -199,21 +197,16 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const col = collection(db,"agenda");
 
-onAuthStateChanged(auth,user=>{
-  if(!user){
-    window.location.href="index.html";
-  }
-});
+  
 
-window.logout = ()=>{
-  signOut(auth).then(()=>{
-    window.location.href="index.html";
-  });
-};
-</script>
 
-<!-- 🧠 SEU SCRIPT ORIGINAL (INALTERADO) -->
+
+
+
+  
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
 
@@ -225,47 +218,94 @@ const modal = document.getElementById("modal");
 const modalTitulo = document.getElementById("modalTitulo");
 const modalInfo = document.getElementById("modalInfo");
 
-const coresServico={
+/* CORES POR SERVIÇO */
+const coresServico = {
   "Instalação":"#1a73e8",
   "Manutenção":"#f57c00",
   "Suporte Técnico":"#8e24aa",
   "Visita Técnica":"#2e7d32"
 };
 
-function salvar(){localStorage.setItem("agenda",JSON.stringify(agenda));}
+function salvar(){
+  localStorage.setItem("agenda",JSON.stringify(agenda));
+}
 
 function atualizarCalendario(){
   if(calendar) calendar.destroy();
-  calendar=new FullCalendar.Calendar(calendarEl,{
+
+  calendar = new FullCalendar.Calendar(calendarEl,{
     locale:"pt-br",
-    height:600,
-    events:agenda.map(a=>({
+    height:650,
+    headerToolbar:{
+      left:"",
+      center:"title",
+      right:"dayGridMonth,timeGridWeek,timeGridDay today prev,next"
+    },
+    buttonText:{
+      today:"Hoje",
+      month:"Mês",
+      week:"Semana",
+      day:"Dia"
+    },
+    events: agenda.map(a=>({
       title:a.cliente,
       start:`${a.data}T${a.hora}`,
-      color:coresServico[a.servico],
+      color:coresServico[a.servico] || "#1a73e8",
       extendedProps:{...a}
     })),
     eventClick(info){
-      const a=info.event.extendedProps;
-      modalTitulo.innerText=a.cliente;
-      modalInfo.innerHTML=`📞 ${a.telefone}<br>📍 ${a.endereco}`;
+      const a = info.event.extendedProps;
+      modalTitulo.innerText = `${a.cliente} - ${a.servico}`;
+      modalInfo.innerHTML = `
+        📞 <a href="https://wa.me/55${a.telefone.replace(/\D/g,'')}" target="_blank">
+          Abrir WhatsApp
+        </a><br>
+        📍 ${a.endereco}<br>
+        📅 ${a.data} às ${a.hora}<br>
+        <b>Status:</b> ${a.status}
+      `;
       modal.style.display="flex";
     }
   });
+
   calendar.render();
 }
 
 function atualizarLista(){
   lista.innerHTML="";
-  agenda.forEach((a,i)=>{
+
+  const agendaOrdenada = [...agenda].sort(
+    (a,b)=> new Date(a.data+"T"+a.hora) - new Date(b.data+"T"+b.hora)
+  );
+
+  agendaOrdenada.forEach(a=>{
+    const i = agenda.indexOf(a);
+    const whatsapp = `https://wa.me/55${a.telefone.replace(/\D/g,'')}`;
+    const maps = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.endereco)}`;
+
     lista.innerHTML+=`
-    <div class="item">
-      <b>${a.cliente}</b><br>
-      ${a.servico}<br>
-      ${a.data} ${a.hora}<br>
-      <span class="badge ${a.status}">${a.status}</span><br><br>
-      <button class="delete" onclick="apagar(${i})">Apagar</button>
-    </div>`;
+      <div class="item" style="border-left-color:${coresServico[a.servico]}">
+        <b>${a.cliente}</b><br>
+        <small>🛠 ${a.servico}</small><br>
+        <small>📅 ${a.data} às ${a.hora}</small><br>
+        <small>📞 <a href="${whatsapp}" target="_blank">Abrir WhatsApp</a></small><br>
+        <small>📍 ${a.endereco}</small><br>
+
+        <button class="maps" onclick="window.open('${maps}','_blank')">
+          🗺️ Traçar rota
+        </button><br><br>
+
+        <span class="badge ${a.status}">${a.status}</span><br><br>
+
+        <select onchange="alterarStatus(${i},this.value)">
+          <option ${a.status==="Pendente"?"selected":""}>Pendente</option>
+          <option ${a.status==="Agendado"?"selected":""}>Agendado</option>
+          <option ${a.status==="Concluído"?"selected":""}>Concluído</option>
+        </select>
+
+        <button class="delete" onclick="apagar(${i})">Apagar</button>
+      </div>
+    `;
   });
 }
 
@@ -280,14 +320,25 @@ form.onsubmit=e=>{
     hora:hora.value,
     status:"Agendado"
   });
-  salvar(); form.reset(); atualizar();
+  salvar();
+  form.reset();
+  atualizar();
 };
 
+window.alterarStatus=(i,s)=>{agenda[i].status=s;salvar();atualizar();}
 window.apagar=i=>{
-  agenda.splice(i,1); salvar(); atualizar();
+  if(confirm("Apagar visita?")){
+    agenda.splice(i,1);
+    salvar();
+    atualizar();
+  }
 };
 
-function atualizar(){atualizarLista(); atualizarCalendario();}
+function atualizar(){
+  atualizarLista();
+  atualizarCalendario();
+}
+
 atualizar();
 
 });
