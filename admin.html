@@ -7,121 +7,44 @@
 <link rel="stylesheet" href="https://unpkg.com/fullcalendar@5.11.5/main.min.css">
 <script src="https://unpkg.com/fullcalendar@5.11.5/main.min.js"></script>
 
+<style>
+body{margin:0;font-family:Segoe UI,sans-serif;background:#f1f3f4}
+.header{background:#000;color:#fff;padding:15px;text-align:center}
+.container{padding:25px}
+.grid{display:grid;grid-template-columns:320px 1fr 320px;gap:20px}
+.card{background:#fff;padding:18px;border-radius:14px}
+input,select,button{width:100%;padding:8px;margin-top:6px}
+button{background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer}
+button.delete{background:#dc3545}
+button.logout{background:#333;margin-top:10px}
+.lista-scroll{max-height:600px;overflow:auto}
+.item{background:#fafafa;padding:12px;margin-bottom:10px;border-radius:10px}
 
+/* LOGIN */
 #login{
-  position:fixed;
-  inset:0;
-  background:#f1f3f4;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:fixed;inset:0;background:#f1f3f4;
+  display:flex;align-items:center;justify-content:center
 }
 .login-box{
-  background:#fff;
-  padding:25px;
-  width:320px;
-  border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  background:#fff;padding:25px;width:320px;
+  border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.15)
 }
+.error{color:#dc3545;font-size:14px;margin-top:8px}
 </style>
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
-  authDomain: "agenda-9dfe3.firebaseapp.com",
-  projectId: "agenda-9dfe3",
-  storageBucket: "agenda-9dfe3.firebasestorage.app",
-  messagingSenderId: "627589847930",
-  appId: "1:627589847930:web:24f29ea4646ee5feb1d4c3"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-/* 🔒 PROTEÇÃO */
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    window.location.href = "index.html";
-  }
-});
-
-/* 🚪 LOGOUT */
-window.logout = () => {
-  signOut(auth).then(()=>{
-    window.location.href = "index.html";
-  });
-};
-</script>
-
-
-  
-<style>
-body{
-  margin:0;
-  font-family:Segoe UI,sans-serif;
-  background:#f1f3f4;
-}
-.header{
-  background:#000;
-  color:#fff;
-  padding:16px;
-  text-align:center;
-  font-size:20px;
-}
-.container{padding:25px}
-.grid{
-  display:grid;
-  grid-template-columns:320px 1fr 320px;
-  gap:20px;
-}
-.card{
-  background:#fff;
-  padding:18px;
-  border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.1);
-}
-input,select,button{
-  width:100%;
-  padding:8px;
-  margin-top:6px;
-}
-button{
-  background:#1a73e8;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-button.delete{background:#dc3545}
-button.logout{background:#333;margin-top:10px}
-.lista-scroll{max-height:600px;overflow-y:auto}
-.item{
-  background:#fafafa;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:10px;
-  border-left:6px solid #1a73e8;
-}
-.badge{
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-  color:#fff;
-}
-.badge.Agendado{background:#1a73e8}
-.badge.Pendente{background:#fbbc04}
-.badge.Concluído{background:#34a853}
-
-/* LOGIN */
-
+<div id="login">
+  <div class="login-box">
+    <h3>🔐 Login</h3>
+    <input id="email" placeholder="E-mail">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <div id="erro" class="error"></div>
+  </div>
+</div>
 
 <!-- APP -->
 <div id="app" style="display:none">
@@ -166,17 +89,16 @@ button.logout{background:#333;margin-top:10px}
 </div>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, deleteDoc, updateDoc,
   doc, onSnapshot, query, orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
   authDomain: "agenda-9dfe3.firebaseapp.com",
@@ -187,16 +109,23 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 const agendaRef = collection(db,"agenda");
 
-const calendarEl = document.getElementById("calendar");
-let calendar;
-let agenda=[];
+const calendarEl=document.getElementById("calendar");
+let calendar, agenda=[];
 
-/* AUTH */
-window.login=()=>signInWithEmailAndPassword(auth,email.value,senha.value);
+/* LOGIN */
+window.login = async ()=>{
+  erro.innerText="";
+  try{
+    await signInWithEmailAndPassword(auth,email.value,senha.value);
+  }catch(e){
+    erro.innerText="❌ E-mail ou senha inválidos";
+  }
+};
+
 window.logout=()=>signOut(auth);
 
 onAuthStateChanged(auth,user=>{
@@ -236,18 +165,12 @@ function atualizarLista(){
     <div class="item">
       <b>${a.cliente}</b><br>
       📅 ${a.data} ${a.hora}<br>
-      <span class="badge ${a.status}">${a.status}</span><br><br>
-      <select onchange="alterarStatus('${a.id}',this.value)">
-        <option ${a.status=="Pendente"?"selected":""}>Pendente</option>
-        <option ${a.status=="Agendado"?"selected":""}>Agendado</option>
-        <option ${a.status=="Concluído"?"selected":""}>Concluído</option>
-      </select>
       <button class="delete" onclick="apagar('${a.id}')">Apagar</button>
     </div>`;
   });
 }
 
-/* CALENDÁRIO (CORRIGIDO) */
+/* CALENDÁRIO */
 function atualizarCalendario(){
   if(calendar) calendar.destroy();
   calendar=new FullCalendar.Calendar(calendarEl,{
@@ -269,5 +192,3 @@ function atualizar(){
 
 </body>
 </html>
-
-
