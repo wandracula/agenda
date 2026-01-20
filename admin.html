@@ -1,17 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Agenda Técnica</title>
+
+<link rel="stylesheet" href="https://unpkg.com/fullcalendar@5.11.5/main.min.css">
+<script src="https://unpkg.com/fullcalendar@5.11.5/main.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background:#f1f3f4;
+}
+.header{
+  background:#000;
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:600;
+}
+.container{
+  max-width:1600px;
+  margin:auto;
+  padding:30px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:320px 1fr 300px;
+  gap:20px;
+}
+.card{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+h3{margin-top:0}
+
+/* FORM */
+form input,form select,form button{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  font-size:14px;
+}
+button{
+  background:#1a73e8;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+button.delete{background:#dc3545}
+button.maps{
+  background:#34a853;
+  margin-top:6px;
+}
+
+/* LISTA */
+.lista-scroll{
+  max-height:620px;
+  overflow-y:auto;
+}
+.item{
+  padding:12px;
+  margin-bottom:12px;
+  background:#fafafa;
+  border-radius:10px;
+  border-left:6px solid #1a73e8;
+}
+.badge{
+  padding:4px 10px;
+  border-radius:6px;
+  color:white;
+  font-size:12px;
+}
+.badge.Agendado{background:#1a73e8}
+.badge.Pendente{background:#fbbc04}
+.badge.Concluído{background:#34a853}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal-content{
+  background:white;
+  padding:20px;
+  width:360px;
+  border-radius:12px;
+}
+.close{
+  text-align:right;
+  cursor:pointer;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">📊 Painel Administrativo</div>
+
+<div class="container">
+<div class="grid">
+
+<!-- FORM -->
+<div class="card">
+<h3>Novo Atendimento</h3>
+<form id="form">
+  <input id="cliente" placeholder="Cliente" required>
+  <input id="telefone" placeholder="Telefone" required>
+  <input id="endereco" placeholder="Endereço" required>
+
+  <select id="servico">
+    <option>Instalação</option>
+    <option>Manutenção</option>
+    <option>Suporte Técnico</option>
+    <option>Visita Técnica</option>
+  </select>
+
+  <input type="date" id="data" required>
+  <input type="time" id="hora" required>
+
+  <button>Salvar</button>
+</form>
+</div>
+
+<!-- CALENDÁRIO -->
+<div class="card">
+<h3>📅 Agenda</h3>
+<div id="calendar"></div>
+</div>
+
+<!-- LISTA -->
+<div class="card">
+<h3>📋 Visitas</h3>
+<div id="lista" class="lista-scroll"></div>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="modal.style.display='none'">✖</div>
+    <h4 id="modalTitulo"></h4>
+    <p id="modalInfo"></p>
+  </div>
+</div>
+
+<!-- FIREBASE + APP -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore,
   collection,
   addDoc,
-  onSnapshot,
   deleteDoc,
-  doc,
   updateDoc,
+  doc,
+  onSnapshot,
   query,
   orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* 🔥 CONFIG FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
   authDomain: "agenda-9dfe3.firebaseapp.com",
@@ -23,11 +184,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const agendaRef = collection(db, "agenda");
+const agendaRef = collection(db,"agenda");
 
-let calendar;
+/* VARIÁVEIS */
 let agenda = [];
+let calendar;
 
+/* CORES */
 const coresServico = {
   "Instalação":"#1a73e8",
   "Manutenção":"#f57c00",
@@ -35,21 +198,15 @@ const coresServico = {
   "Visita Técnica":"#2e7d32"
 };
 
-const calendarEl = document.getElementById("calendar");
-const lista = document.getElementById("lista");
-const modal = document.getElementById("modal");
-const modalTitulo = document.getElementById("modalTitulo");
-const modalInfo = document.getElementById("modalInfo");
-
-/* 🔥 ESCUTA EM TEMPO REAL */
-onSnapshot(query(agendaRef, orderBy("data")), snap => {
-  agenda = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+/* 🔄 TEMPO REAL */
+onSnapshot(query(agendaRef, orderBy("data")), snap=>{
+  agenda = snap.docs.map(d=>({ id:d.id, ...d.data() }));
   atualizar();
 });
 
-form.onsubmit = async e => {
+/* SALVAR */
+form.onsubmit = async e =>{
   e.preventDefault();
-
   await addDoc(agendaRef,{
     cliente: cliente.value,
     telefone: telefone.value,
@@ -59,43 +216,42 @@ form.onsubmit = async e => {
     hora: hora.value,
     status: "Agendado"
   });
-
   form.reset();
 };
 
-window.apagar = async id => {
+/* AÇÕES */
+window.apagar = async id =>{
   if(confirm("Apagar visita?")){
     await deleteDoc(doc(db,"agenda",id));
   }
 };
 
-window.alterarStatus = async (id,status) => {
-  await updateDoc(doc(db,"agenda",id),{ status });
+window.alterarStatus = async (id,status)=>{
+  await updateDoc(doc(db,"agenda",id),{status});
 };
 
+/* LISTA */
 function atualizarLista(){
-  lista.innerHTML = "";
-
+  lista.innerHTML="";
   agenda.forEach(a=>{
-    const whatsapp = `https://wa.me/55${a.telefone.replace(/\D/g,'')}`;
-    const maps = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.endereco)}`;
-
-    lista.innerHTML += `
+    const whatsapp=`https://wa.me/55${a.telefone.replace(/\D/g,'')}`;
+    const maps=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.endereco)}`;
+    lista.innerHTML+=`
       <div class="item" style="border-left-color:${coresServico[a.servico]}">
         <b>${a.cliente}</b><br>
-        <small>🛠 ${a.servico}</small><br>
-        <small>📅 ${a.data} às ${a.hora}</small><br>
-        <small>📞 <a href="${whatsapp}" target="_blank">WhatsApp</a></small><br>
-        <small>📍 ${a.endereco}</small><br><br>
+        🛠 ${a.servico}<br>
+        📅 ${a.data} ${a.hora}<br>
+        📞 <a href="${whatsapp}" target="_blank">WhatsApp</a><br>
+        📍 ${a.endereco}<br><br>
 
-        <button class="maps" onclick="window.open('${maps}')">🗺️ Traçar rota</button><br><br>
+        <button class="maps" onclick="window.open('${maps}')">🗺️ Rota</button><br><br>
 
         <span class="badge ${a.status}">${a.status}</span><br><br>
 
         <select onchange="alterarStatus('${a.id}',this.value)">
-          <option ${a.status==="Pendente"?"selected":""}>Pendente</option>
-          <option ${a.status==="Agendado"?"selected":""}>Agendado</option>
-          <option ${a.status==="Concluído"?"selected":""}>Concluído</option>
+          <option ${a.status=="Pendente"?"selected":""}>Pendente</option>
+          <option ${a.status=="Agendado"?"selected":""}>Agendado</option>
+          <option ${a.status=="Concluído"?"selected":""}>Concluído</option>
         </select>
 
         <button class="delete" onclick="apagar('${a.id}')">Apagar</button>
@@ -104,31 +260,30 @@ function atualizarLista(){
   });
 }
 
+/* CALENDÁRIO */
 function atualizarCalendario(){
   if(calendar) calendar.destroy();
-
-  calendar = new FullCalendar.Calendar(calendarEl,{
+  calendar = new FullCalendar.Calendar(calendar,{
     locale:"pt-br",
     height:650,
     events: agenda.map(a=>({
       title:a.cliente,
       start:`${a.data}T${a.hora}`,
-      color: coresServico[a.servico],
+      color:coresServico[a.servico],
       extendedProps:a
     })),
     eventClick(info){
-      const a = info.event.extendedProps;
-      modalTitulo.innerText = `${a.cliente} - ${a.servico}`;
-      modalInfo.innerHTML = `
-        📞 <a href="https://wa.me/55${a.telefone.replace(/\D/g,'')}" target="_blank">WhatsApp</a><br>
+      const a=info.event.extendedProps;
+      modalTitulo.innerText=`${a.cliente} - ${a.servico}`;
+      modalInfo.innerHTML=`
+        📞 ${a.telefone}<br>
         📍 ${a.endereco}<br>
-        📅 ${a.data} às ${a.hora}<br>
+        📅 ${a.data} ${a.hora}<br>
         <b>Status:</b> ${a.status}
       `;
       modal.style.display="flex";
     }
   });
-
   calendar.render();
 }
 
@@ -137,3 +292,6 @@ function atualizar(){
   atualizarCalendario();
 }
 </script>
+
+</body>
+</html>
