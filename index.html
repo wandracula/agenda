@@ -2,169 +2,278 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Assistência Técnica Especializada</title>
+<title>Assistência Técnica Profissional</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- GOOGLE FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
+:root{
+  --primary:#1a73e8;
+  --dark:#0f172a;
+  --light:#f8fafc;
+  --accent:#ffeb3b;
+}
+
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:'Segoe UI', sans-serif;
+  font-family:'Inter',sans-serif;
   background:linear-gradient(135deg,#0f4cb8,#1a73e8);
   color:white;
 }
+
+/* ===== HEADER ===== */
+.header{
+  position:fixed;
+  top:0;
+  width:100%;
+  z-index:100;
+  background:rgba(15,23,42,.85);
+  backdrop-filter:blur(8px);
+  padding:18px 0;
+}
+
+.header .container{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:.5px;
+}
+
+.logo span{color:var(--accent)}
+
+.nav a{
+  color:white;
+  text-decoration:none;
+  margin-left:22px;
+  font-weight:500;
+  opacity:.9;
+}
+
+.nav a:hover{opacity:1}
+
+/* ===== HERO ===== */
 .container{
   max-width:1200px;
   margin:auto;
-  padding:80px 20px;
+  padding:120px 20px 80px;
 }
+
 .hero{
   display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:50px;
+  grid-template-columns:1.1fr .9fr;
+  gap:60px;
   align-items:center;
 }
+
 h1{
-  font-size:42px;
+  font-size:44px;
   line-height:1.2;
+  margin-bottom:20px;
 }
+
 p{
   font-size:18px;
+  line-height:1.6;
   opacity:.95;
 }
-.highlight{color:#ffeb3b}
 
+/* ===== BOTÕES ===== */
 .buttons{
-  margin-top:35px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:14px;
+  margin-top:40px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:18px;
 }
 
 .btn{
-  display:inline-block;
-  padding:15px 28px;
-  border-radius:40px;
-  text-decoration:none;
+  height:58px;
+  border-radius:50px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
   font-weight:600;
-  transition:.2s;
+  text-decoration:none;
+  letter-spacing:.3px;
+  transition:.3s ease;
+  cursor:pointer;
 }
+
 .btn.primary{
   background:white;
-  color:#1a73e8;
+  color:var(--primary);
 }
+
 .btn.secondary{
   border:2px solid white;
   color:white;
 }
+
 .btn.outline{
-  border:2px dashed #fff;
-  color:#fff;
-  opacity:.95;
+  background:rgba(255,255,255,.12);
+  border:2px solid rgba(255,255,255,.5);
+  color:white;
 }
 
 .btn:hover{
-  transform:translateY(-2px);
-  opacity:.95;
+  transform:translateY(-4px);
+  box-shadow:0 14px 30px rgba(0,0,0,.35);
 }
 
+/* ===== CARD ===== */
 .card{
   background:white;
-  color:#333;
-  padding:35px;
-  border-radius:20px;
-  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  color:#1f2937;
+  padding:40px;
+  border-radius:24px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
 }
-ul{list-style:none;padding:0;line-height:2}
 
-/* LOGIN MODAL */
+.card h3{
+  margin-top:0;
+  font-size:22px;
+}
+
+.card ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.card li{
+  margin-bottom:14px;
+  font-size:15px;
+}
+
+/* ===== LOGIN ===== */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.7);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:1000;
+  z-index:999;
 }
+
 .modal-content{
   background:white;
-  color:#333;
-  padding:30px;
+  color:#1f2937;
+  padding:35px;
   width:90%;
-  max-width:360px;
-  border-radius:16px;
+  max-width:380px;
+  border-radius:18px;
 }
-.modal-content input,button{
+
+.modal-content h3{
+  margin-top:0;
+  margin-bottom:20px;
+}
+
+.modal-content input{
   width:100%;
   padding:12px;
-  margin-top:12px;
-}
-button{
-  background:#1a73e8;
-  color:white;
-  border:none;
+  margin-bottom:14px;
   border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.modal-content button{
+  width:100%;
+  padding:13px;
+  border-radius:10px;
+  border:none;
+  background:var(--primary);
+  color:white;
   font-weight:600;
   cursor:pointer;
 }
-.error{color:#d32f2f;margin-top:10px}
 
-/* WHATSAPP */
+.error{
+  color:#dc2626;
+  margin-top:12px;
+  font-size:14px;
+}
+
+/* ===== WHATSAPP ===== */
 .whatsapp{
   position:fixed;
-  bottom:20px;
-  right:20px;
+  right:22px;
+  bottom:22px;
   background:#25d366;
   color:white;
-  padding:14px 18px;
-  border-radius:50px;
+  padding:16px 20px;
+  border-radius:60px;
   font-weight:600;
   text-decoration:none;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  box-shadow:0 15px 40px rgba(0,0,0,.35);
   z-index:999;
 }
-.whatsapp:hover{opacity:.9}
 
+/* ===== MOBILE ===== */
 @media(max-width:900px){
   .hero{grid-template-columns:1fr}
   h1{font-size:34px}
+  .header .container{flex-direction:column;gap:10px}
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
+<div class="header">
+  <div class="container">
+    <div class="logo">Assistência <span>PRO</span></div>
+    <div class="nav">
+      <a href="cliente.html">Acompanhar Serviço</a>
+      <a href="programas.html">Programas</a>
+      <a href="https://wandracula.github.io/sistema-os/loja.html" target="_blank">Loja</a>
+      <a href="#" onclick="abrirLogin()">Área Admin</a>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP -->
 <a class="whatsapp" href="https://wa.me/5599999999999" target="_blank">
 💬 WhatsApp
 </a>
 
+<!-- HERO -->
 <div class="container">
   <div class="hero">
 
-   <div>
+    <div>
       <h1>
-        Assistência Técnica <span class="highlight">Especializada</span><br>
-        em Computadores e Notebooks
+        Assistência Técnica<br>
+        <span style="color:var(--accent)">Profissional e Organizada</span>
       </h1>
 
       <p>
-        Soluções completas em <b>manutenção, instalação e suporte técnico</b>,
-        com acompanhamento online e total transparência.
+        Atendimento especializado em <b>computadores e notebooks</b>,  
+        com controle total do serviço, acompanhamento online e transparência
+        em cada etapa do processo.
       </p>
 
       <p>
-        Aqui você acompanha <b>cada etapa do seu equipamento</b>,
-        desde a entrada até a conclusão do serviço.
+        Aqui você sabe exatamente <b>onde está seu equipamento</b>,  
+        quando ficará pronto e quanto irá pagar.
       </p>
 
       <div class="buttons">
         <a class="btn primary" href="cliente.html">📅 Acompanhar Agendamento</a>
         <a class="btn secondary" href="os-cliente.html">📦 Consultar Ordem de Serviço</a>
-
         <a class="btn outline" href="programas.html">💽 Programas para Instalação</a>
         <a class="btn outline" href="https://wandracula.github.io/sistema-os/loja.html" target="_blank">🛒 Loja</a>
-
-        <a class="btn secondary" href="#" onclick="abrirLogin()">🔐 Área Administrativa</a>
       </div>
     </div>
 
@@ -175,14 +284,14 @@ button{
         <li>✔ Formatação, backup e upgrade</li>
         <li>✔ Instalação de sistemas e softwares</li>
         <li>✔ Suporte técnico especializado</li>
-        <li>✔ Visita técnica residencial ou empresarial</li>
+        <li>✔ Visitas técnicas residenciais e empresariais</li>
       </ul>
     </div>
 
   </div>
 </div>
 
-<!-- LOGIN -->
+<!-- LOGIN MODAL -->
 <div class="modal" id="loginModal">
   <div class="modal-content">
     <h3>🔐 Login Administrativo</h3>
@@ -193,10 +302,11 @@ button{
   </div>
 </div>
 
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBPijStbscjxd37siV7cafBy5thQhrv8KQ",
@@ -210,18 +320,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-window.abrirLogin = ()=>{
-  loginModal.style.display="flex";
-};
+window.abrirLogin = ()=> loginModal.style.display="flex";
 
 window.login = ()=>{
   signInWithEmailAndPassword(auth,email.value,senha.value)
-    .then(()=>{
-      window.location.href="admin.html";
-    })
-    .catch(()=>{
-      erro.innerText="❌ Email ou senha inválidos";
-    });
+    .then(()=> window.location.href="admin.html")
+    .catch(()=> erro.innerText="Email ou senha inválidos");
 };
 
 window.onclick = e=>{
