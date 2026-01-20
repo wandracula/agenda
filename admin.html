@@ -39,7 +39,7 @@ body{
 }
 .grid{
   display:grid;
-  grid-template-columns:320px 1fr 300px;
+  grid-template-columns:320px 1fr 320px;
   gap:16px;
 }
 .card{
@@ -84,11 +84,51 @@ form button{
 .badge.Pendente{background:#fbbc04}
 .badge.Concluído{background:#34a853}
 
+button.maps{
+  background:#34a853;
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  margin-top:6px;
+}
+
+button.delete{
+  background:#dc3545;
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  margin-top:6px;
+}
+
 :root{
   --instalacao:#1a73e8;
   --manutencao:#f57c00;
   --suporte:#8e24aa;
   --visita:#2e7d32;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal-content{
+  background:white;
+  padding:20px;
+  width:340px;
+  border-radius:14px;
+}
+.close{
+  text-align:right;
+  cursor:pointer;
+  font-weight:bold;
 }
 
 @media(max-width:900px){
@@ -140,6 +180,15 @@ form button{
 </div>
 </div>
 
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="modal.style.display='none'">✖</div>
+    <h4 id="modalTitulo"></h4>
+    <p id="modalInfo"></p>
+  </div>
+</div>
+
 <script type="module">
 /* 🔥 FIREBASE */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -182,6 +231,9 @@ window.logout = ()=>{
 const form = document.getElementById("form");
 const lista = document.getElementById("lista");
 const calendarEl = document.getElementById("calendar");
+const modal = document.getElementById("modal");
+const modalTitulo = document.getElementById("modalTitulo");
+const modalInfo = document.getElementById("modalInfo");
 
 let agenda = [];
 let calendar;
@@ -229,12 +281,24 @@ window.apagar = async id=>{
 
 function atualizarLista(){
   lista.innerHTML="";
-  agenda.forEach(a=>{
+
+  const agendaOrdenada = [...agenda].sort(
+    (a,b)=> new Date(a.data+"T"+a.hora) - new Date(b.data+"T"+b.hora)
+  );
+
+  agendaOrdenada.forEach(a=>{
+    const whatsapp = `https://wa.me/55${a.telefone}`;
+    const maps = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.endereco)}`;
+
     lista.innerHTML+=`
       <div class="item" style="border-left-color:${coresServico[a.servico]}">
         <b>${a.cliente}</b><br>
-        <small>${a.servico}</small><br>
-        <small>${a.data} às ${a.hora}</small><br><br>
+        <small>🛠 ${a.servico}</small><br>
+        <small>📅 ${a.data} às ${a.hora}</small><br>
+        <small>📞 <a href="${whatsapp}" target="_blank">WhatsApp</a></small><br>
+        <small>📍 ${a.endereco}</small><br>
+
+        <button class="maps" onclick="window.open('${maps}','_blank')">🗺️ Traçar rota</button><br><br>
 
         <span class="badge ${a.status}">${a.status}</span><br><br>
 
@@ -244,9 +308,7 @@ function atualizarLista(){
           <option ${a.status==="Concluído"?"selected":""}>Concluído</option>
         </select>
 
-        <button onclick="apagar('${a.id}')" style="margin-top:6px;background:#dc3545;color:white;border:none;padding:6px 10px;border-radius:6px">
-          Apagar
-        </button>
+        <button class="delete" onclick="apagar('${a.id}')">Apagar</button>
       </div>
     `;
   });
@@ -261,9 +323,22 @@ function atualizarCalendario(){
     events: agenda.map(a=>({
       title:a.cliente,
       start:`${a.data}T${a.hora}`,
-      color:coresServico[a.servico]
-    }))
+      color:coresServico[a.servico],
+      extendedProps:{...a}
+    })),
+    eventClick(info){
+      const a = info.event.extendedProps;
+      modalTitulo.innerText = `${a.cliente} - ${a.servico}`;
+      modalInfo.innerHTML = `
+        📞 <a href="https://wa.me/55${a.telefone}" target="_blank">WhatsApp</a><br>
+        📍 ${a.endereco}<br>
+        📅 ${a.data} às ${a.hora}<br>
+        <b>Status:</b> ${a.status}
+      `;
+      modal.style.display="flex";
+    }
   });
+
   calendar.render();
 }
 
