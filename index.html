@@ -32,17 +32,41 @@ p{
   opacity:.95;
 }
 .highlight{color:#ffeb3b}
-.buttons{margin-top:35px}
+
+.buttons{
+  margin-top:35px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+}
+
 .btn{
   display:inline-block;
   padding:15px 28px;
   border-radius:40px;
   text-decoration:none;
   font-weight:600;
-  margin-right:12px;
+  transition:.2s;
 }
-.btn.primary{background:white;color:#1a73e8}
-.btn.secondary{border:2px solid white;color:white}
+.btn.primary{
+  background:white;
+  color:#1a73e8;
+}
+.btn.secondary{
+  border:2px solid white;
+  color:white;
+}
+.btn.outline{
+  border:2px dashed #fff;
+  color:#fff;
+  opacity:.95;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  opacity:.95;
+}
+
 .card{
   background:white;
   color:#333;
@@ -81,6 +105,7 @@ button{
   border:none;
   border-radius:8px;
   font-weight:600;
+  cursor:pointer;
 }
 .error{color:#d32f2f;margin-top:10px}
 
@@ -123,17 +148,22 @@ button{
       </h1>
 
       <p>
-        Soluções completas em <b>manutenção, instalação, suporte técnico</b>  
-        e <b>visitas técnicas</b>, com agendamento rápido e acompanhamento online.
+        Soluções completas em <b>manutenção, instalação e suporte técnico</b>,
+        com acompanhamento online e total transparência.
       </p>
 
       <p>
-        Aqui você sabe exatamente <b>em que etapa está o seu equipamento</b>,  
-        com transparência, organização e atendimento profissional.
+        Aqui você acompanha <b>cada etapa do seu equipamento</b>,
+        desde a entrada até a conclusão do serviço.
       </p>
 
       <div class="buttons">
-        <a class="btn primary" href="cliente.html">📅 Acompanhar meu serviço</a>
+        <a class="btn primary" href="cliente.html">📅 Acompanhar Agendamento</a>
+        <a class="btn secondary" href="os-cliente.html">📦 Consultar Ordem de Serviço</a>
+
+        <a class="btn outline" href="programas.html">💽 Programas para Instalação</a>
+        <a class="btn outline" href="https://wandracula.github.io/sistema-os/loja.html" target="_blank">🛒 Loja</a>
+
         <a class="btn secondary" href="#" onclick="abrirLogin()">🔐 Área Administrativa</a>
       </div>
     </div>
@@ -141,7 +171,7 @@ button{
     <div class="card">
       <h3>🔧 Nossos Serviços</h3>
       <ul>
-       <li>✔ Manutenção preventiva e corretiva</li>
+        <li>✔ Manutenção preventiva e corretiva</li>
         <li>✔ Formatação, backup e upgrade</li>
         <li>✔ Instalação de sistemas e softwares</li>
         <li>✔ Suporte técnico especializado</li>
@@ -201,5 +231,3 @@ window.onclick = e=>{
 
 </body>
 </html>
-
-
