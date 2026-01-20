@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Agenda Técnica</title>
+
+<link rel="stylesheet" href="https://unpkg.com/fullcalendar@5.11.5/main.min.css">
+<script src="https://unpkg.com/fullcalendar@5.11.5/main.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background:#f1f3f4;
+}
+.header{
+  background:#000;
+  color:#fff;
+  padding:16px;
+  text-align:center;
+  font-size:20px;
+  font-weight:600;
+}
+.container{
+  max-width:1600px;
+  margin:auto;
+  padding:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:320px 1fr 300px;
+  gap:16px;
+}
+.card{
+  background:white;
+  padding:16px;
+  border-radius:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+h3{margin-top:0}
+
+/* FORM */
+form input,form select,form button{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  font-size:14px;
+  box-sizing:border-box;
+}
+button{
+  background:#1a73e8;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+button.delete{background:#dc3545}
+button.maps{
+  background:#34a853;
+  margin-top:6px;
+}
+
+/* LISTA */
+.lista-scroll{
+  max-height:600px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+.item{
+  padding:12px;
+  margin-bottom:12px;
+  background:#fafafa;
+  border-radius:10px;
+  border-left:6px solid;
+}
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:12px;
+  color:white;
+}
+.badge.Agendado{background:#1a73e8}
+.badge.Pendente{background:#fbbc04}
+.badge.Concluído{background:#34a853}
+small{color:#555}
+
+/* CALENDÁRIO */
+.fc-toolbar-title{
+  font-size:18px!important;
+  font-weight:600;
+  margin-bottom:6px;
+}
+.fc-header-toolbar{
+  flex-direction:column;
+  gap:6px;
+}
+.fc-toolbar-chunk{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:4px;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal-content{
+  background:white;
+  padding:20px;
+  width:90%;
+  max-width:360px;
+  border-radius:14px;
+}
+.close{
+  text-align:right;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* 🎨 CORES SERVIÇO */
+:root{
+  --instalacao:#1a73e8;
+  --manutencao:#f57c00;
+  --suporte:#8e24aa;
+  --visita:#2e7d32;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 900px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+  .lista-scroll{
+    max-height:420px;
+  }
+  .header{
+    font-size:18px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">📊 Painel Administrativo</div>
+
+<div class="container">
+<div class="grid">
+
+<!-- CADASTRO -->
+<div class="card">
+<h3>Novo Atendimento</h3>
+<form id="form">
+  <input id="cliente" placeholder="Cliente" required>
+  <input id="telefone" placeholder="Telefone" required>
+  <input id="endereco" placeholder="Endereço do cliente" required>
+
+  <select id="servico">
+    <option>Instalação</option>
+    <option>Manutenção</option>
+    <option>Suporte Técnico</option>
+    <option>Visita Técnica</option>
+  </select>
+
+  <input type="date" id="data" required>
+  <input type="time" id="hora" required>
+  <button>Salvar</button>
+</form>
+</div>
+
+<!-- CALENDÁRIO -->
+<div class="card">
+<h3>📅 Agenda</h3>
+<div id="calendar"></div>
+</div>
+
+<!-- LISTA -->
+<div class="card">
+<h3>📋 Visitas</h3>
+<div id="lista" class="lista-scroll"></div>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="modal.style.display='none'">✖</div>
+    <h4 id="modalTitulo"></h4>
+    <p id="modalInfo"></p>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+
+let agenda = JSON.parse(localStorage.getItem("agenda")) || [];
+let calendar;
+
+const coresServico={
+  "Instalação":"var(--instalacao)",
+  "Manutenção":"var(--manutencao)",
+  "Suporte Técnico":"var(--suporte)",
+  "Visita Técnica":"var(--visita)"
+};
+
+const calendarEl=document.getElementById("calendar");
+const modal=document.getElementById("modal");
+const modalTitulo=document.getElementById("modalTitulo");
+const modalInfo=document.getElementById("modalInfo");
+
+function salvar(){
+  localStorage.setItem("agenda",JSON.stringify(agenda));
+}
+
+function atualizarCalendario(){
+  if(calendar) calendar.destroy();
+
+  calendar=new FullCalendar.Calendar(calendarEl,{
+    locale:"pt-br",
+    height: window.innerWidth < 900 ? 500 : 650,
+    headerToolbar:{
+      left:"",
+      center:"title",
+      right:"dayGridMonth,timeGridWeek,timeGridDay today prev,next"
+    },
+    buttonText:{
+      today:"Hoje",month:"Mês",week:"Semana",day:"Dia"
+    },
+    events:agenda.map(a=>({
+      title:a.cliente,
+      start:`${a.data}T${a.hora}`,
+      color:coresServico[a.servico],
+      extendedProps:{...a}
+    })),
+    eventClick(info){
+      const a=info.event.extendedProps;
+      modalTitulo.innerText=`${a.cliente} - ${a.servico}`;
+      modalInfo.innerHTML=`
+        📞 <a href="https://wa.me/55${a.telefone.replace(/\D/g,'')}" target="_blank">WhatsApp</a><br>
+        📍 ${a.endereco}<br>
+        📅 ${a.data} às ${a.hora}<br>
+        <b>Status:</b> ${a.status}
+      `;
+      modal.style.display="flex";
+    }
+  });
+
+  calendar.render();
+}
+
+function atualizarLista(){
+  lista.innerHTML="";
+  [...agenda].sort((a,b)=>new Date(a.data+"T"+a.hora)-new Date(b.data+"T"+b.hora))
+  .forEach(a=>{
+    const i=agenda.indexOf(a);
+    const whatsapp=`https://wa.me/55${a.telefone.replace(/\D/g,'')}`;
+    const maps=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.endereco)}`;
+
+    lista.innerHTML+=`
+      <div class="item" style="border-left-color:${coresServico[a.servico]}">
+        <b>${a.cliente}</b><br>
+        <small>${a.servico}</small><br>
+        <small>${a.data} às ${a.hora}</small><br>
+        <small><a href="${whatsapp}" target="_blank">📲 WhatsApp</a></small><br>
+
+        <button class="maps" onclick="window.open('${maps}','_blank')">🗺️ Traçar rota</button><br><br>
+
+        <span class="badge ${a.status}">${a.status}</span><br><br>
+
+        <select onchange="alterarStatus(${i},this.value)">
+          <option ${a.status==="Pendente"?"selected":""}>Pendente</option>
+          <option ${a.status==="Agendado"?"selected":""}>Agendado</option>
+          <option ${a.status==="Concluído"?"selected":""}>Concluído</option>
+        </select>
+
+        <button class="delete" onclick="apagar(${i})">Apagar</button>
+      </div>
+    `;
+  });
+}
+
+form.onsubmit=e=>{
+  e.preventDefault();
+  agenda.push({
+    cliente:cliente.value,
+    telefone:telefone.value,
+    endereco:endereco.value,
+    servico:servico.value,
+    data:data.value,
+    hora:hora.value,
+    status:"Agendado"
+  });
+  salvar();
+  form.reset();
+  atualizar();
+};
+
+window.alterarStatus=(i,s)=>{agenda[i].status=s;salvar();atualizar();}
+window.apagar=i=>{if(confirm("Apagar visita?")){agenda.splice(i,1);salvar();atualizar();}}
+
+function atualizar(){
+  atualizarLista();
+  atualizarCalendario();
+}
+
+atualizar();
+window.addEventListener("resize",atualizarCalendario);
+
+});
+</script>
+
+</body>
+</html>
