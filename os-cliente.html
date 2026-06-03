@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Ordem de Serviço</title>
+
+<style>
+body{
+    background:#f1f5f9;
+    font-family:Arial, sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+}
+
+.card{
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+h2{
+    margin-top:0;
+    color:#2563eb;
+}
+
+input,select,button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #cbd5e1;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#1e40af;
+}
+
+.resultado{
+    margin-top:20px;
+}
+
+.item{
+    border-left:5px solid #2563eb;
+    background:#f8fafc;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+}
+
+.status{
+    font-size:18px;
+    font-weight:bold;
+    color:#2563eb;
+    margin-top:8px;
+}
+
+.data{
+    color:#666;
+    margin-top:5px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <h2>🔍 Consultar Ordem de Serviço</h2>
+
+        <select id="tipoBusca">
+            <option value="osnum">Número da OS</option>
+            <option value="cliente">Nome do Cliente</option>
+            <option value="telefone">Telefone</option>
+        </select>
+
+        <input id="valorBusca" placeholder="Digite a informação">
+
+        <button id="btnBuscar">
+            Consultar
+        </button>
+
+        <div id="resultado" class="resultado"></div>
+
+    </div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBSQrG5bdCGC_6kUQxccgJxz2gtLiB2Kb4",
+  authDomain: "sistema-os-1284b.firebaseapp.com",
+  projectId: "sistema-os-1284b",
+  storageBucket: "sistema-os-1284b.appspot.com",
+  messagingSenderId: "1032102605721",
+  appId: "1:1032102605721:web:7eba5fc6e4eb9fc17ad908"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const resultado = document.getElementById("resultado");
+
+document.getElementById("btnBuscar").onclick = async ()=>{
+
+    resultado.innerHTML = "🔍 Buscando...";
+
+    const tipo = document.getElementById("tipoBusca").value;
+    let valor = document.getElementById("valorBusca").value.trim();
+
+    if(!valor){
+        resultado.innerHTML = "Informe um valor para consulta.";
+        return;
+    }
+
+    const osRef = collection(db,"os");
+
+    let q;
+
+    if(tipo === "osnum"){
+        q = query(
+            osRef,
+            where("osnum","==",Number(valor))
+        );
+    }else{
+
+        if(tipo === "telefone"){
+            valor = valor.replace(/\D/g,'');
+        }
+
+        q = query(
+            osRef,
+            where(tipo,"==",valor)
+        );
+    }
+
+    const snap = await getDocs(q);
+
+    resultado.innerHTML = "";
+
+    if(snap.empty){
+        resultado.innerHTML = `
+            <div class="item">
+                Nenhuma ordem de serviço encontrada.
+            </div>
+        `;
+        return;
+    }
+
+    snap.forEach(doc=>{
+
+        const os = doc.data();
+
+        resultado.innerHTML += `
+            <div class="item">
+
+                <h3>OS Nº ${os.osnum}</h3>
+
+                <p><b>Cliente:</b> ${os.cliente}</p>
+
+                <p><b>Equipamento / Serviço:</b></p>
+                <p>${os.descricao || "-"}</p>
+
+                <div class="status">
+                    Status: ${os.status}
+                </div>
+
+                <p>
+                    <b>Observação Técnica:</b><br>
+                    ${os.observacao || "Sem observações."}
+                </p>
+
+                <div class="data">
+                    Valor: R$ ${(Number(os.valor)||0).toFixed(2)}
+                </div>
+
+            </div>
+        `;
+    });
+
+};
+
+</script>
+
+</body>
+</html>
